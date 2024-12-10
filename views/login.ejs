@@ -1,0 +1,24 @@
+<div class="main-content">
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    <a href = "/">Home</a>
+    <a href = "/profile">Profile</a>
+    <h1>Login</h1>
+    <% if (errorMessage) { %>
+        <p class="error-message"><%= errorMessage %></p>
+    <% } %>
+    <form action="/login" method="POST">
+        <div class="form-input-container">
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username" required>
+        </div>
+        <div class="form-input-container">
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+</div>
+</body>
+</html>
