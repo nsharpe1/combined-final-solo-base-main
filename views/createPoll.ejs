@@ -9,6 +9,9 @@
             <a href = "/profile">Profile</a>
         </div>
         <h1>Create a New Poll</h1>
+        <% if (errorMessage) { %>
+            <p class="error-message"><%= errorMessage %></p>
+        <% } %>
         <form action="/createPoll" method="POST">
             <div class="form-input-container">
                 <label for="question">Poll Question:</label>

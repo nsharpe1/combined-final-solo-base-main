@@ -126,10 +126,9 @@ app.post("/signup", async (request, response) => {
     const { username, password } = request.body;
     const user = await User.findOne({username})
     if(user){
-        return response.status(401).render('signup',{errorMessage: "This user already exist"})
+        return response.status(401).render('signup',{errorMessage: "Username taken"});
     } else {
         const hashedpassword = await bcrypt.hash(password,10);
-    
         const user1 = new User({ username: username, password: hashedpassword, role: "user" });
         await user1.save();
         return response.redirect('/');
@@ -164,18 +163,21 @@ app.get('/createPoll', async (request, response) => {
         return response.redirect('/');
     }
 
-    return response.render('createPoll')
+    return response.render('createPoll', {errorMessage: null});
 });
 
 // Poll creation
 app.post('/createPoll', async (request, response) => {
     const { question, options } = request.body;
-    const formattedOptions = Object.values(options).map((option) => ({ answer: option, votes: 0 }));
-
-    const poll1 = new Poll({ question: question, options: formattedOptions });
-    await poll1.save();
-    return response.redirect('/dashboard');
-
+    const poll = await Poll.findOne({question})
+    if(poll){
+        return response.status(401).render('createPoll',{errorMessage: "Poll question taken"});
+    } else {
+        const formattedOptions = Object.values(options).map((option) => ({ answer: option, votes: 0 }));
+        const poll1 = new Poll({ question: question, options: formattedOptions });
+        await poll1.save();
+        return response.redirect('/dashboard'); 
+    }
     // const pollCreationError = onCreateNewPoll(question, formattedOptions);
     //TODO: If an error occurs, what should we do?
 });
