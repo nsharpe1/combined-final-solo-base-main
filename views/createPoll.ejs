@@ -1,11 +1,13 @@
-<!-- TODO: Header? -->
+<%- include('partials/header', { title: "createPoll" }) %>
 <body>
     <div class="main-content">
-        <form action="/logout" method="post">
-            <button type="submit">Logout</button>
-        </form>
-        <a href = "/">Home</a>
-        <a href = "/profile">Profile</a>
+        <div class="navbar">
+            <form action="/logout" method="post">
+                <button type="submit">Logout</button>
+            </form>
+            <a href = "/">Home</a>
+            <a href = "/profile">Profile</a>
+        </div>
         <h1>Create a New Poll</h1>
         <form action="/createPoll" method="POST">
             <div class="form-input-container">

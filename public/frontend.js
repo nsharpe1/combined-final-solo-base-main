@@ -1,12 +1,11 @@
 // Establish a WebSocket connection to the server
-const pollList = document.getElementById('poll-list');
 const socket = new WebSocket('ws://localhost:3000/ws');
-
 
 // Listen for messages from the server
 socket.addEventListener('message', (event) => {
     const data = JSON.parse(event.data);
-    
+    console.log(data);
+
     //TODO: Handle the events from the socket
 });
 
@@ -36,7 +35,7 @@ function onNewPollAdded(data) {
  * @param {*} data The data from the server (probably containing which poll was updated and the new vote values for that poll)
  */
 function onIncomingVote(data) {
-    
+
 }
 
 /**
@@ -56,7 +55,7 @@ function onVoteClicked(event) {
     const pollInput = document.getElementById('poll');
     socket.send(
         JSON.stringify(
-            { pollId: pollId, selectedOption: selectedOption }
+            { type: "votes", pollId: pollId, selectedOption: selectedOption }
         )
     );
     
@@ -66,43 +65,4 @@ function onVoteClicked(event) {
 //Adds a listener to each existing poll to handle things when the user attempts to vote
 document.querySelectorAll('.poll-form').forEach((pollForm) => {
     pollForm.addEventListener('submit', onVoteClicked);
-});
-
-
-
-
-
-//Connect socket
-//Add event listener to listen for new socket messages
-//Add event listener to handle sending the form data via the socket.
-
-const stockForm = document.getElementById('stock-form');
-
-socket.addEventListener('message', (event) => {
-    const message = event.data;
-    const json = JSON.parse(message);
-
-    for (const [stock, price] of Object.entries(json)) {
-       let stockListItem = document.getElementById(stock);
-       if (!stockListItem) {
-           stockListItem = document.createElement('li');
-           stockListItem.id = stock;
-           const stockList = document.getElementById('stocks');
-           stockList.appendChild(stockListItem);
-       }
-       stockListItem.innerHTML = `${stock}: <span>${price.toFixed(2)}</span>`
-    }
-});
-
-stockForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const stockInput = document.getElementById('stock');
-    socket.send(
-        JSON.stringify(
-            { stockName: stockInput.value }
-        )
-    );
-
-    stockInput.value = '';
 });

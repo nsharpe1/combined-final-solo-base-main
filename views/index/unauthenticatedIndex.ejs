@@ -1,10 +1,12 @@
-<!-- TODO: Header? -->
+<%- include('../partials/header', { title: "Home" }) %>
 <div class="main-content">
-    <form action="/logout" method="post">
-        <button type="submit">Logout</button>
-    </form>
-    <a href = "/">Home</a>
-    <a href = "/profile">Profile</a>
+    <div class="navbar">
+        <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+        </form>
+        <a href = "/">Home</a>
+        <a href = "/profile">Profile</a>
+    </div>
     <h1>Welcome to the Voting App</h1>
 
     <div class="button-container">

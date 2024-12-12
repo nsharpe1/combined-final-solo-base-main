@@ -1,11 +1,14 @@
+<%- include('partials/header', { title: "Profile" }) %>
 <div class="main-content">
-    <form action="/logout" method="post">
-        <button type="submit">Logout</button>
-    </form>
-    <a href = "/">Home</a>
-    <a href = "/profile">Profile</a>
+    <div class="navbar">
+        <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+        </form>
+        <a href = "/">Home</a>
+        <a href = "/profile">Profile</a>
+    </div>
     <h1>Profile Page</h1>
-    <h2>Welcome, (Username goes here)</h2>
+    <h2>Welcome, <%= username %></h2>
     <p>Number Of Polls Voted In: (Number goes here)</p>
 </div>
 </body>

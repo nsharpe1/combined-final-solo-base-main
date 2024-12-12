@@ -4,6 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
+const { error } = require('console');
 
 const PORT = 3000;
 //TODO: Update this URI to match your own MongoDB setup
@@ -47,10 +48,28 @@ const Poll = mongoose.model('Poll', pollSchema);
 
 app.ws('/ws', (socket, request) => {
     connectedClients.push(socket);
+    console.log("Connect TO Web Socket"+ socket)
 
     socket.on('message', async (message) => {
         const data = JSON.parse(message);
-        return console.log(data);
+        console.log(data.type);
+        switch(data.type){
+            case 'votes':
+                const {pollId, selectedOption} = data;
+        const poll = await Poll.findOne({_id: pollId});
+        let option;
+        for (let i = 0; i < poll.options.length; i++) {
+            if (poll.options[i].answer === selectedOption) {
+                option = poll.options[i];
+                break;
+            }
+        }
+        option.votes = option.votes + 1;
+        await poll.save();
+                
+        }
+        console.log(message)
+        
     });
 
     socket.on('close', async (message) => {
@@ -66,7 +85,6 @@ app.get('/', async (request, response) => {
     const filter = {};
     const allpolls = await Poll.find(filter);
     const pollslength = allpolls.length;
-    console.log(pollslength);
 
     response.render('index/unauthenticatedIndex', {pollsnumber: pollslength});
 });
@@ -80,7 +98,6 @@ app.post('/login', async (request, response) => {
     const requestBody = request.body;
 
     const user = await User.findOne({username: requestBody.username});
-    // console.log(user);
 
     if (!user) {
         console.error("Invalid credentials");
@@ -93,32 +110,37 @@ app.post('/login', async (request, response) => {
     } 
     else {
         request.session.userId = user._id;
-        return response.redirect('dashboard'); 
+        request.session.username = user.username;
+        return response.redirect('dashboard');
     }
 });
 
 app.get('/signup', async (request, response) => {
     if (request.session.userId) {
-        return response.redirect('/dashboard');
+        return response.redirect('/');
     }
-
-    return response.render('signup', { errorMessage: null });
+    return response.render('signup', {errorMessage: null});
 });
 
 app.post("/signup", async (request, response) => {
     const { username, password } = request.body;
-    const hashedpassword = await bcrypt.hash(password,10);
+    const user = await User.findOne({username})
+    if(user){
+        return response.status(401).render('signup',{errorMessage: "This user already exist"})
+    } else {
+        const hashedpassword = await bcrypt.hash(password,10);
     
-    const user1 = new User({ username: username, password: hashedpassword, role: "user" });
-    await user1.save();
-    return response.redirect('/');
+        const user1 = new User({ username: username, password: hashedpassword, role: "user" });
+        await user1.save();
+        return response.redirect('/');
+    }
 });
 
 app.get('/dashboard', async (request, response) => {
     const filter = {};
     const allpolls = await Poll.find(filter);
 
-    console.log(JSON.stringify(allpolls));
+    // console.log(JSON.stringify(allpolls));
     
     if (!request.session.userId) {
         return response.redirect('/');
@@ -130,13 +152,17 @@ app.get('/dashboard', async (request, response) => {
 });
 
 app.get('/profile', async (request, response) => {
-    return response.render('profile');
+    if (!request.session.userId) {
+        return response.redirect('/');
+    }
+    const username = request.session.username;
+    return response.render('profile', {username: username});
 });
 
 app.get('/createPoll', async (request, response) => {
-    // if (!request.session.user?.id) {
-        // return response.redirect('/');
-    // }
+    if (!request.session.userId) {
+        return response.redirect('/');
+    }
 
     return response.render('createPoll')
 });
@@ -148,13 +174,9 @@ app.post('/createPoll', async (request, response) => {
 
     const poll1 = new Poll({ question: question, options: formattedOptions });
     await poll1.save();
-    const socket = new WebSocket('ws://localhost:3000/ws');
-    socket.send(
-        { question: question, options: formattedOptions }
-    );
-    return response.redirect('/');
+    return response.redirect('/dashboard');
 
-    const pollCreationError = onCreateNewPoll(question, formattedOptions);
+    // const pollCreationError = onCreateNewPoll(question, formattedOptions);
     //TODO: If an error occurs, what should we do?
 });
 

@@ -1,16 +1,17 @@
-<!-- TODO: Header? -->
-
+<%- include('partials/header', { title: "Signup" }) %>
 <div class="main-content">
-    <form action="/logout" method="post">
-        <button type="submit">Logout</button>
-    </form>
-    <a href = "/">Home</a>
-    <a href = "/profile">Profile</a>
+    <div class="navbar">
+        <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+        </form>
+        <a href = "/">Home</a>
+        <a href = "/profile">Profile</a>
+    </div>
     <h1>Sign Up</h1>
+    <% if (errorMessage) { %>
+        <p class="error-message"><%= errorMessage %></p>
+    <% } %>
     <form action="/signup" method="post" style="width: 300px;">
-        <% if (errorMessage) { %>
-            <p class="error-message"><%= errorMessage %></p>
-        <% } %>
         <div class="form-input-container">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>

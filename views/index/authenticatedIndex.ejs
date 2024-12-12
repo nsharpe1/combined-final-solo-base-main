@@ -1,10 +1,12 @@
-<!-- TODO: Header? -->
+<%- include('../partials/header', { title: "Dashboard" }) %>
 <div class="main-content">
-    <form action="/logout" method="post">
-        <button type="submit">Logout</button>
-    </form>
-    <a href = "/">Home</a>
-    <a href = "/profile">Profile</a>
+    <div class="navbar">
+        <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+        </form>
+        <a href = "/">Home</a>
+        <a href = "/profile">Profile</a>
+    </div>
     <h1>Active Polls</h1>
     <% if(polls.length <1){ %>
         <p>No polls currently in the collection!</p>
