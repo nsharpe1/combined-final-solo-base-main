@@ -15,7 +15,7 @@
     <!-- This is an example of how you can render the polls on the page, you're welcome to keep it or change it if you wish. This page isn't fully complete though -->
     <ul id="polls">
         <% polls.forEach((poll) => { %>
-            <li class="poll-container" id="<%= poll.id %>">
+            <li class="poll-container" id="<%= poll._id %>">
                 <h2><%= poll.question %></h2>
                 <ul class="poll-options">
                     <% for (let {answer, votes } of poll.options) { %>
@@ -30,7 +30,7 @@
                             Vote for <%= answer %>
                         </button>
                     <% } %>
-                    <input type="text" style="display: none;" value="<%= poll.id %>" name="poll-id"/>
+                    <input type="text" style="display: none;" value="<%= poll._id %>" name="poll-id"/>
                 </form>
             </li>
         <% }) %>

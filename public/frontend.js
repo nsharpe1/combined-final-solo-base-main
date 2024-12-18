@@ -1,14 +1,40 @@
 // Establish a WebSocket connection to the server
 const socket = new WebSocket('ws://localhost:3000/ws');
 
-// Listen for messages from the server
-socket.addEventListener('message', (event) => {
+socket.onmessage = function(event) {
     const data = JSON.parse(event.data);
-    console.log(data);
+    // console.log(data + "14");
+    if(data.type === 'pollUpdate') {
+        updatePollUI(data.poll);
+    }
+}
 
-    //TODO: Handle the events from the socket
+function updatePollUI(updatedPoll) {
+    const pollContainer = document.getElementById(updatedPoll._id);
+    if (pollContainer) {
+        const optionsList = pollContainer.querySelector('.poll-options');
+        optionsList.innerHTML = ''; // Clear current options
+ 
+        // Re-render updated options
+        updatedPoll.options.forEach((option) => {
+            const li = document.createElement('li');
+            li.id = `${updatedPoll._id}_${option.answer}`;
+            li.innerHTML = `<strong>${option.answer}:</strong> ${option.votes} votes`;
+            optionsList.appendChild(li);
+        });
+    }
+}
+
+document.querySelectorAll('.vote-button').forEach((button) => {
+    button.addEventListener('click', (event) => {
+        event.preventDefault();
+ 
+        const pollId = event.target.form['poll-id'].value;
+        const selectedOption = event.target.value;
+ 
+        socket.send(JSON.stringify({ type: 'vote', pollId, selectedOption }));
+    });
 });
-
 
 /**
  * Handles adding a new poll to the page when one is received from the server

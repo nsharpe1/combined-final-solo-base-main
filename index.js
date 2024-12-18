@@ -52,23 +52,25 @@ app.ws('/ws', (socket, request) => {
 
     socket.on('message', async (message) => {
         const data = JSON.parse(message);
-        console.log(data.type);
+        console.log(data.type + "55");
         switch(data.type){
-            case 'votes':
+            case 'vote':
                 const {pollId, selectedOption} = data;
         const poll = await Poll.findOne({_id: pollId});
         let option;
         for (let i = 0; i < poll.options.length; i++) {
             if (poll.options[i].answer === selectedOption) {
                 option = poll.options[i];
+                console.log(option + "loop");
                 break;
             }
         }
         option.votes = option.votes + 1;
         await poll.save();
+        showupdatedPoll(poll);
                 
         }
-        console.log(message)
+        console.log(message + "71");
         
     });
 
@@ -76,6 +78,15 @@ app.ws('/ws', (socket, request) => {
         
     });
 });
+
+// showupdatedPoll function
+function showupdatedPoll(poll) {
+    const pollObject = poll.toObject();
+    connectedClients.forEach((client) => {
+        console.log(poll.question + "85");
+        client.send(JSON.stringify({ type: 'pollUpdate', poll: pollObject }));
+    });
+}
 
 app.get('/', async (request, response) => {
     if (request.session.user?.id) {
