@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     password: { type: String, required: true },
     role: { type: String, required: true },
+    pollcount: { type: [String], required: true },
 }); 
 
 const User = mongoose.model('User', userSchema);
@@ -52,7 +53,6 @@ app.ws('/ws', (socket, request) => {
 
     socket.on('message', async (message) => {
         const data = JSON.parse(message);
-        console.log(data.type + "55");
         switch(data.type){
             case 'vote':
                 const {pollId, selectedOption} = data;
@@ -61,21 +61,20 @@ app.ws('/ws', (socket, request) => {
         for (let i = 0; i < poll.options.length; i++) {
             if (poll.options[i].answer === selectedOption) {
                 option = poll.options[i];
-                console.log(option + "loop");
                 break;
             }
         }
         option.votes = option.votes + 1;
         await poll.save();
         showupdatedPoll(poll);
-                
+        const user = await User.findOne({_id: request.session.userId});
+        
+        if(!user.pollcount.includes(pollId)){
+            user.pollcount.push(pollId);
+            await user.save();
         }
-        console.log(message + "71");
-        
-    });
 
-    socket.on('close', async (message) => {
-        
+        }
     });
 });
 
@@ -83,7 +82,6 @@ app.ws('/ws', (socket, request) => {
 function showupdatedPoll(poll) {
     const pollObject = poll.toObject();
     connectedClients.forEach((client) => {
-        console.log(poll.question + "85");
         client.send(JSON.stringify({ type: 'pollUpdate', poll: pollObject }));
     });
 }
@@ -140,7 +138,7 @@ app.post("/signup", async (request, response) => {
         return response.status(401).render('signup',{errorMessage: "Username taken"});
     } else {
         const hashedpassword = await bcrypt.hash(password,10);
-        const user1 = new User({ username: username, password: hashedpassword, role: "user" });
+        const user1 = new User({ username: username, password: hashedpassword, role: "user", pollscount: [] });
         await user1.save();
         return response.redirect('/');
     }
@@ -149,8 +147,6 @@ app.post("/signup", async (request, response) => {
 app.get('/dashboard', async (request, response) => {
     const filter = {};
     const allpolls = await Poll.find(filter);
-
-    // console.log(JSON.stringify(allpolls));
     
     if (!request.session.userId) {
         return response.redirect('/');
@@ -165,8 +161,12 @@ app.get('/profile', async (request, response) => {
     if (!request.session.userId) {
         return response.redirect('/');
     }
-    const username = request.session.username;
-    return response.render('profile', {username: username});
+
+    const user = await User.findOne({_id: request.session.userId});
+    const username = user.username;
+    const numberpolls = user.pollcount.length;
+
+    return response.render('profile', {username: username, numberpolls: numberpolls});
 });
 
 app.get('/createPoll', async (request, response) => {
